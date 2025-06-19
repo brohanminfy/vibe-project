@@ -7,8 +7,10 @@ const VibeSchema = new Schema({
     },
     author:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'User'
-    }
+        ref:'User',
+        required:true
+    },
+    likes:[{type:mongoose.Schema.Types.ObjectId,ref:'User'}]
 })
 
 const Vibe = mongoose.model("Vibe",VibeSchema)

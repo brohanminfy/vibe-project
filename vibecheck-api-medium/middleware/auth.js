@@ -8,7 +8,8 @@ const auth = async (req,res,next)=>{
         return res.status(400).json({message:"Authentication required!!"})
     }
     const decode = jwt.verify(jwtToken,process.env.JWT_SECRET)
-    req.user = decode
+    const UserInfo = await User.findOne({email:decode.userEmail})
+    req.user = UserInfo
     next();
     }catch(e){
         return res.status(401).json({message:"Invalid token"+e})
