@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import Vibes from '../models/Vibe'
 import auth from '../middleware/auth'
 import Vibe from '../models/Vibe'
+import comments from '../models/Comment'
 
 
 const vibeMessageValidation = z.object({
@@ -89,4 +90,42 @@ export const like = async (req,res)=>{
     }catch(e){
 
     }
+}
+
+export const postcomment = async(req,res)=>{
+    try{
+        const vibeId = req.params.id
+        const result = req.body
+        const user = req.user
+        // console.log(vibeId,result,user)
+        if(!vibeId || !result || !user){
+            return res.status(400).json({"success":false,"Message":"insufficient info"})
+        }
+
+        const createComment = await comments.create({"comment":result.comment,"user":user["_id"],"vibe":vibeId})
+        console.log(createComment)
+        res.status(200).json({"success":true,"Message":"Comment added successfully"})
+    }catch(e){
+        res.status(500).json({"success":false,"Message":"Internal server issue"})
+    }
+}
+
+export const getcomments = async (req,res)=>{
+try{
+    const vibe_id = req.params.id
+    if(!vibe_id){
+       return res.status(400).json({"success":false,"message":"Id not provided"})
+    }
+    const check_VibeId = await Vibe.findById(vibe_id)
+    if(!check_VibeId){
+       return res.status(400).json({"success":false,"Message":"No vibe found with id"})
+    }
+    const result = await comments.find({"vibe":vibe_id}).populate("user","name").populate("vibe","vibeMessage")
+    if(!result){
+        return res.status(200).json({"success":true,"Message":"No comments for this vibe"})
+    }
+    res.status(200).json({success:true,"data":result})
+}catch(e){
+res.status(500).json({"success":false,"message":"internal issue"})
+}
 }

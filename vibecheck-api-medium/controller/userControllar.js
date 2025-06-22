@@ -50,8 +50,8 @@ const checkExistingUser = async(email)=>{
 const GenerateToken = async (user)=>{
     return jwt.sign(
         {
-            userEmail : user.email,
-            userPassword :user.password
+            userEmail : user.email
+     
         },
         process.env.JWT_SECRET,
         { expiresIn: "1h" }

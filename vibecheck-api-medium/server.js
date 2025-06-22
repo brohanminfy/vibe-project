@@ -6,6 +6,7 @@ import dbConnect from './config/db.js'
 // import mongoose from 'mongoose'
 // import {} from './controller/userControllar.js'
 import router from './routes/UserVibeRouter.js'
+import commentrouter from './routes/comments.js'
 
 const app = express()
 dotenv.config()
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 3000
 
 app.use('/api/v1/auth',router)
 app.use('/api/v1',router)
-
+app.use('/api/v1',commentrouter)
 app.listen(PORT,()=>{
     console.log(`listening ${PORT}`)
 })

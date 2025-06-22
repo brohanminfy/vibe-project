@@ -4,10 +4,16 @@ import {postVibe,getVibe,like} from '../controller/VibesControllar'
 import auth from '../middleware/auth'
 const router = Router()
 
-router.route('/signUp').post(signUp)
-router.route('/login').post(login)
-router.route('/vibes').post(auth,postVibe)
-router.route('/vibes').get(getVibe)
-router.route('/:id/like').put(auth,like)
 
-export default router
+router.get('/test',(req,res)=>{
+    res.send("Hello Ping")
+})
+
+
+router.post('/signUp',signUp)
+router.post('/login',login)
+router.post('/vibes',auth,postVibe)
+router.get('/vibes',getVibe)
+router.put('/:id/like',auth,like)
+
+export default router   
