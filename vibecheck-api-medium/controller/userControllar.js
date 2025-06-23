@@ -2,6 +2,7 @@ import z from 'zod'
 import User from '../models/User'
 import bcrypt, { hash } from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 const nameValidation = z.object({
     "name":z.string().min(3,{message:"Minimum 3 characters"})
@@ -120,3 +121,35 @@ export const login = async (req,res)=>{
         })
     }
 }
+
+export const followUser = async (req, res) => {
+    try {
+        const userIdToFollow = req.params.userId;
+        const currentUserId = req.user._id;
+        console.log("Follow ", userIdToFollow,currentUserId)
+        if (userIdToFollow === currentUserId.toString()) {
+            return res.status(400).json({ message: "You cannot follow yourself." });
+        }
+
+        const userToFollow = await User.findById(userIdToFollow);
+        const currentUser = await User.findById(currentUserId);
+
+        if (!userToFollow || !currentUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Prevent duplicate follows
+        if (currentUser.following.includes(userIdToFollow)) {
+            return res.status(400).json({ message: "Already following this user." });
+        }
+
+        currentUser.following.push(userIdToFollow);
+        userToFollow.followers.push(currentUserId);
+        await currentUser.save();
+        await userToFollow.save();
+
+        res.status(200).json({ message: "Followed successfully." });
+    } catch (e) {
+        res.status(500).json({ message: "Internal server error." });
+    }
+};

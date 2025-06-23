@@ -48,18 +48,38 @@ export const postVibe =async (req,res)=>{
         console.log(e)
     }
 }
-export const getVibe = async (req,res)=>{
-    try{
-        const vibes = await Vibe.find().populate('author','name')
+export const getVibe = async (req, res) => {
+    try {
+        let { limit = 10, page = 1 } = req.query;
+        limit = parseInt(limit);
+        page = parseInt(page);
+        const skip = (page - 1) * limit;
+
+        const total = await Vibe.countDocuments();
+        const vibes = await Vibe.find()
+            .populate('author', 'name')
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const hasNext = skip + vibes.length < total;
+        const pagination = {
+            next: hasNext ? { page: page + 1, limit } : null,
+            total,
+            page,
+            limit
+        };
+
         return res.status(200).json({
-            success:true,
-            data: vibes
+            success: true,
+            data: vibes,
+            pagination
         });
-    }catch(e){
-        res.status(500).json({success:false,message:"Internal error"+e})
-        console.log(e)
+    } catch (e) {
+        res.status(500).json({ success: false, message: "Internal error" + e });
+        console.log(e);
     }
-}
+};
 
 export const like = async (req,res)=>{
     try{
@@ -129,3 +149,37 @@ try{
 res.status(500).json({"success":false,"message":"internal issue"})
 }
 }
+
+export const feed = async (req, res) => {
+    try {
+        const currentUser = req.user;
+        if (!currentUser) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        // Get vibes from users the current user follows
+        const vibes = await Vibe.find({
+            author: { $in: currentUser.following }
+        }).populate('author', 'name').sort({ _id: -1 });
+        return res.status(200).json({ success: true, data: vibes });
+    } catch (e) {
+        res.status(500).json({ success: false, message: "Internal error" });
+    }
+};
+
+export const deleteVibe = async (req, res) => {
+    try {
+        const vibeId = req.params.id;
+        const currentUser = req.user;
+        const vibe = await Vibe.findById(vibeId);
+        if (!vibe) {
+            return res.status(404).json({ message: "Vibe not found" });
+        }
+        if (vibe.author.toString() !== currentUser._id.toString()) {
+            return res.status(403).json({ message: "Forbidden: You can only delete your own vibe." });
+        }
+        await Vibe.findByIdAndDelete(vibeId);
+        return res.status(200).json({ message: "Vibe deleted successfully." });
+    } catch (e) {
+        res.status(500).json({ message: "Internal server error." });
+    }
+};

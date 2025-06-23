@@ -1,6 +1,6 @@
 import {Router} from 'express';
-import {signUp,login} from '../controller/userControllar'
-import {postVibe,getVibe,like} from '../controller/VibesControllar'
+import {signUp,login, followUser} from '../controller/userControllar'
+import {postVibe,getVibe,like, feed, deleteVibe} from '../controller/VibesControllar'
 import auth from '../middleware/auth'
 const router = Router()
 
@@ -15,5 +15,8 @@ router.post('/login',login)
 router.post('/vibes',auth,postVibe)
 router.get('/vibes',getVibe)
 router.put('/:id/like',auth,like)
+router.post('/users/:userId/follow', auth, followUser)
+router.get('/feed', auth, feed)
+router.delete('/vibes/:id', auth, deleteVibe)
 
 export default router   
