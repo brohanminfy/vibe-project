@@ -18,7 +18,6 @@ const searchUser = async (req, res) => {
 
         // 2. Search for the user in the database
         const foundUser = await User.findOne({ email: email });
-
         // 3. Respond
         if (!foundUser) {
             return res.status(404).json({ message: "Phew! Your partner is not on the list." });
